@@ -2,9 +2,8 @@ name: Build macOS App
 
 on:
   push:
-    branches:
-      - main  # 或 master，根据你仓库默认分支改
-  workflow_dispatch:  # 允许手动触发
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,19 +14,23 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: '3.11'
 
       - name: Install dependencies
         run: pip install pyinstaller pillow
 
       - name: Build macOS App
         run: |
+          # 用英文名构建（防止路径编码问题）
           pyinstaller --onefile --windowed set_image_dates.py \
-                      --name "图片时间修正工具" \
+                      --name "ImageDateFixer" \
                       --icon=icon.icns || true
+
+      - name: List dist files
+        run: ls -R dist
 
       - name: Upload app artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 图片时间修正工具
-          path: dist/图片时间修正工具.app
+          name: ImageDateFixer-macOS
+          path: dist/*
