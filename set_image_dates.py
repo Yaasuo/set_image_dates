@@ -19,7 +19,7 @@ def set_file_times(file_path, date_str):
     try:
         dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
         ts = time.mktime(dt.timetuple())
-        os.utime(file_path, (ts, ts))  # 修改访问时间和修改时间
+        os.utime(file_path, (ts, ts))  # 修改访问和修改时间
 
         # macOS 修改创建时间
         mac_time = dt.strftime("%Y%m%d%H%M.%S")
