@@ -1,11 +1,12 @@
 name: Build Mac Intel App
 
 on:
-  workflow_dispatch:  # 支持手动触发
+  workflow_dispatch:  # 手动触发
 
 jobs:
-  build-mac-intel:
-    runs-on: macos-13  # Intel macOS 环境
+  build-intel-mac:
+    runs-on: macos-13  # Intel macOS
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,11 +18,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pillow pyinstaller
+          pip install pyinstaller pillow
 
-      - name: Build app (Intel macOS)
+      - name: Build App (Intel)
         run: |
-          pyinstaller -F -w -i NONE set_image_dates.py --name "ImageDateFixer"
+          pyinstaller -F -w \
+                      --name "图片时间修正工具" \
+                      set_image_dates.py
+                      # 如果有图标可加: --icon=icon.icns
 
       - name: List dist folder
         run: ls -R dist
@@ -29,5 +33,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ImageDateFixer-mac-intel
-          path: dist/ImageDateFixer
+          name: 图片时间修正工具-mac-intel
+          path: dist/*
