@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-macos:
-    name: Build for ${{ matrix.arch }}
+    name: Build ImageDateFixer for ${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
@@ -16,11 +16,11 @@ jobs:
             runner: macos-13   # Intel Mac
             python: "3.11"
           - arch: arm
-            runner: macos-14   # Apple Silicon (M1/M2/M3)
+            runner: macos-14   # Apple Silicon Mac
             python: "3.11"
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python }}
@@ -33,20 +33,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install pillow pyinstaller
 
-      - name: Build macOS app
+      - name: Build .app using PyInstaller
         run: |
           APP_NAME="ImageDateFixer-${{ matrix.arch }}"
+          # 使用 --onedir 保留 .app 结构
           pyinstaller --windowed --onedir --name "$APP_NAME" fix_image_time.py
-          echo "✅ Build completed for $APP_NAME"
+          echo "✅ Built $APP_NAME"
 
-      - name: Package build into ZIP (preserve .app structure)
+      - name: Package .app into ZIP
         run: |
           cd dist
           APP_NAME="ImageDateFixer-${{ matrix.arch }}"
           ZIP_NAME="${{ matrix.arch }}-ImageDateFixer.zip"
-          # 使用 ditto 打包，保留可执行权限
+          # 使用 ditto 保留 .app 可执行权限
           ditto -c -k --sequesterRsrc --keepParent "$APP_NAME" "$ZIP_NAME"
-          echo "📦 Created ZIP for $APP_NAME using ditto"
+          echo "📦 Packaged $APP_NAME into $ZIP_NAME"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
