@@ -1,4 +1,4 @@
-name: Build ImageDateFixer for macOS (Intel + ARM + Universal)
+name: Build ImageDateFixer for macOS (Intel + ARM)
 
 on:
   push:
@@ -13,10 +13,10 @@ jobs:
       matrix:
         include:
           - arch: intel
-            runner: macos-13   # Intel 芯片环境
+            runner: macos-13   # Intel Mac
             python: "3.11"
           - arch: arm
-            runner: macos-14   # Apple Silicon (M1/M2/M3)
+            runner: macos-14   # Apple Silicon Mac
             python: "3.11"
 
     steps:
@@ -39,7 +39,7 @@ jobs:
           pyinstaller --windowed --onedir --name "$APP_NAME" fix_image_time.py
           echo "✅ Build completed for $APP_NAME"
 
-      - name: Package build
+      - name: Package build into ZIP
         run: |
           cd dist
           zip -r "${{ matrix.arch }}-ImageDateFixer.zip" "ImageDateFixer-${{ matrix.arch }}"
@@ -50,43 +50,3 @@ jobs:
         with:
           name: ImageDateFixer-${{ matrix.arch }}-macOS
           path: dist/${{ matrix.arch }}-ImageDateFixer.zip
-
-  merge-universal:
-    name: Merge Intel + ARM → Universal Binary
-    needs: build-macos
-    runs-on: macos-14
-    steps:
-      - name: Download Intel build
-        uses: actions/download-artifact@v4
-        with:
-          name: ImageDateFixer-intel-macOS
-          path: intel
-
-      - name: Download ARM build
-        uses: actions/download-artifact@v4
-        with:
-          name: ImageDateFixer-arm-macOS
-          path: arm
-
-      - name: Merge into Universal Binary
-        run: |
-          mkdir -p dist
-          echo "🔧 Merging Intel + ARM builds into Universal binary..."
-          lipo -create \
-            "intel/ImageDateFixer-intel/ImageDateFixer" \
-            "arm/ImageDateFixer-arm/ImageDateFixer" \
-            -output "dist/ImageDateFixer-universal"
-          cp -R "arm/ImageDateFixer-arm.app" "dist/ImageDateFixer-universal.app"
-          lipo -create \
-            "intel/ImageDateFixer-intel.app/Contents/MacOS/ImageDateFixer-intel" \
-            "arm/ImageDateFixer-arm.app/Contents/MacOS/ImageDateFixer-arm" \
-            -output "dist/ImageDateFixer-universal.app/Contents/MacOS/ImageDateFixer-universal"
-          cd dist
-          zip -r "ImageDateFixer-universal-macOS.zip" "ImageDateFixer-universal.app"
-          echo "✅ Universal binary created successfully!"
-
-      - name: Upload Universal app
-        uses: actions/upload-artifact@v4
-        with:
-          name: ImageDateFixer-universal-macOS
-          path: dist/ImageDateFixer-universal-macOS.zip
