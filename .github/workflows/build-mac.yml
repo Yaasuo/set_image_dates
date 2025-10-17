@@ -1,4 +1,4 @@
-name: Build ImageDateFixer for macOS (Intel + ARM)
+name: Build ImageDateFixer for macOS Intel
 
 on:
   push:
@@ -6,27 +6,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-macos:
-    name: Build ImageDateFixer for ${{ matrix.arch }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - arch: intel
-            runner: macos-13   # Intel Mac
-            python: "3.11"
-          - arch: arm
-            runner: macos-14   # Apple Silicon Mac
-            python: "3.11"
-
+  build-intel-macos:
+    name: Build ImageDateFixer Intel
+    runs-on: macos-13   # Intel Mac Runner
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -35,22 +25,21 @@ jobs:
 
       - name: Build .app using PyInstaller
         run: |
-          APP_NAME="ImageDateFixer-${{ matrix.arch }}"
-          # 使用 --onedir 保留 .app 结构
+          APP_NAME="ImageDateFixer-intel"
           pyinstaller --windowed --onedir --name "$APP_NAME" fix_image_time.py
           echo "✅ Built $APP_NAME"
 
-      - name: Package .app into ZIP
+      - name: Package .app into ZIP (optional)
         run: |
           cd dist
-          APP_NAME="ImageDateFixer-${{ matrix.arch }}"
-          ZIP_NAME="${{ matrix.arch }}-ImageDateFixer.zip"
-          # 使用 ditto 保留 .app 可执行权限
+          APP_NAME="ImageDateFixer-intel"
+          ZIP_NAME="ImageDateFixer-intel.zip"
+          # 保留 .app 结构和可执行权限
           ditto -c -k --sequesterRsrc --keepParent "$APP_NAME" "$ZIP_NAME"
           echo "📦 Packaged $APP_NAME into $ZIP_NAME"
 
-      - name: Upload build artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ImageDateFixer-${{ matrix.arch }}-macOS
-          path: dist/${{ matrix.arch }}-ImageDateFixer.zip
+          name: ImageDateFixer-intel-macOS
+          path: dist/ImageDateFixer-intel.zip
