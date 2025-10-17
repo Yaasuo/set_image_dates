@@ -1,37 +1,40 @@
-name: Build Mac Intel App
+name: Build macOS App (Intel + ARM)
 
 on:
-  workflow_dispatch:  # 手动触发
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-  build-intel-mac:
-    runs-on: macos-13  # Intel macOS
+  build-mac:
+    name: Build macOS Universal App
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install pyinstaller pillow
 
-      - name: Build App (Intel)
+      - name: Build macOS App (Universal Binary)
         run: |
-          pyinstaller -F -w \
-                      --name "图片时间修正工具" \
-                      set_image_dates.py
-                      # 如果有图标可加: --icon=icon.icns
+          pyinstaller --onefile --windowed --name "图片时间修正工具" fix_image_time.py
+          mkdir -p dist_universal
+          cp -r dist/图片时间修正工具 dist_universal/
+          cd dist_universal
+          zip -r 图片时间修正工具-mac通用版.zip 图片时间修正工具
 
-      - name: List dist folder
-        run: ls -R dist
-
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 图片时间修正工具-mac-intel
-          path: dist/*
+          name: 图片时间修正工具-mac通用版
+          path: dist_universal/图片时间修正工具-mac通用版.zip
