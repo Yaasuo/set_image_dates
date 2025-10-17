@@ -16,7 +16,7 @@ jobs:
             runner: macos-13   # Intel Mac
             python: "3.11"
           - arch: arm
-            runner: macos-14   # Apple Silicon Mac
+            runner: macos-14   # Apple Silicon (M1/M2/M3)
             python: "3.11"
 
     steps:
@@ -39,11 +39,14 @@ jobs:
           pyinstaller --windowed --onedir --name "$APP_NAME" fix_image_time.py
           echo "✅ Build completed for $APP_NAME"
 
-      - name: Package build into ZIP
+      - name: Package build into ZIP (preserve .app structure)
         run: |
           cd dist
-          zip -r "${{ matrix.arch }}-ImageDateFixer.zip" "ImageDateFixer-${{ matrix.arch }}"
-          echo "📦 Created ZIP for ${{ matrix.arch }}"
+          APP_NAME="ImageDateFixer-${{ matrix.arch }}"
+          ZIP_NAME="${{ matrix.arch }}-ImageDateFixer.zip"
+          # 使用 ditto 打包，保留可执行权限
+          ditto -c -k --sequesterRsrc --keepParent "$APP_NAME" "$ZIP_NAME"
+          echo "📦 Created ZIP for $APP_NAME using ditto"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
