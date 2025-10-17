@@ -27,14 +27,14 @@ jobs:
 
       - name: Build macOS App (Universal Binary)
         run: |
-          pyinstaller --onefile --windowed --name "图片时间修正工具" fix_image_time.py
+          pyinstaller --onefile --windowed --name "ImageDateFixer" fix_image_time.py
           mkdir -p dist_universal
-          cp -r dist/图片时间修正工具 dist_universal/
+          cp -r dist/ImageDateFixer dist_universal/
           cd dist_universal
-          zip -r 图片时间修正工具-mac通用版.zip 图片时间修正工具
+          zip -r ImageDateFixer-mac-universal.zip ImageDateFixer
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 图片时间修正工具-mac通用版
-          path: dist_universal/图片时间修正工具-mac通用版.zip
+          name: ImageDateFixer-mac-universal
+          path: dist_universal/ImageDateFixer-mac-universal.zip
